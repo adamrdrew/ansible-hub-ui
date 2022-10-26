@@ -18,9 +18,23 @@ if [ "${TRAVIS_BRANCH}" = "master" ]; then
     fi
 fi
 
-if [[ "${TRAVIS_BRANCH}" = "prod-beta" || "${TRAVIS_BRANCH}" = "prod-stable" ]]; then
-    npm run deploy
-    echo "PUSHING ${TRAVIS_BRANCH}"
+if [[ "${TRAVIS_BRANCH}" = "prod-beta" ]]; then
+    HUB_CLOUD_BETA="true" npm run deploy
+    echo "PUSHING prod-beta"
     rm -rf ./build/.git
-    .travis/release.sh "${TRAVIS_BRANCH}"
+    .travis/release.sh "prod-beta"
+
+    # FIXME: remove .. triggering a stage-stable push from non-master commit
+    HUB_CLOUD_BETA="false" npm run deploy
+    echo "PUSHING qa-stable"
+    rm -rf ./dist/.git
+    .travis/release.sh "qa-stable"
 fi
+
+if [[ "${TRAVIS_BRANCH}" = "prod-stable" ]]; then
+    HUB_CLOUD_BETA="false" npm run deploy
+    echo "PUSHING prod-stable"
+    rm -rf ./build/.git
+    .travis/release.sh "prod-stable"
+fi
+
